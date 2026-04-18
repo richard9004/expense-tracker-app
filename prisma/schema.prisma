@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Transaction {
+  id          BigInt     @id @map("id") @default(autoincrement())
+  createdAt   DateTime   @map("created_at") @default(now())
+  amount      Float?      @map("amount")
+  type        String?     @map("typetext") 
+  description String?    @map("description")
+
+  @@map("transactions") // actual table name in Supabase
+}
+
+model Post {
+  id        BigInt    @id @map("id") @default(autoincrement())
+  createdAt DateTime  @map("created_at") @default(now())
+  title     String    @map("title")
+  content   String?   @map("content")
+  published Boolean   @map("published") @default(false)
+
+  @@map("posts")
+}
+
+model User {
+  id        BigInt    @id @map("id") @default(autoincrement())
+  createdAt DateTime  @map("created_at") @default(now())
+  email     String    @unique @map("email")
+  name      String?   @map("name")
+  password  String    @map("password")
+
+  @@map("users")
+}
+
+model Customer {
+  id        BigInt    @id @map("id") @default(autoincrement())
+  createdAt DateTime  @map("created_at") @default(now())
+  name      String?   @map("name")
+  email     String?   @map("email")
+  phone     String?   @map("phone")
+  address   String?   @map("address")
+  username  String    @map("username")
+  password  String    @map("password")
+
+  @@map("customers")
+}
+
+model Blog {
+  id        BigInt    @id @map("id") @default(autoincrement())
+  createdAt DateTime  @map("created_at") @default(now())
+  updatedAt DateTime  @map("updated_at") @updatedAt
+  title     String    @map("title")
+  slug      String    @unique @map("slug")
+  content   String?   @map("content")
+  published Boolean   @map("published") @default(false)
+
+  @@map("blogs")
+}
+
+

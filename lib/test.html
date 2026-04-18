@@ -1,0 +1,70 @@
+<script>
+export const handler = async (event) => {
+  try {
+    const apiKey = process.env.API_KEY;
+
+    // Parse the incoming request body
+    const body = JSON.parse(event.body || "{}");
+    const text = body.text || "paid for groceries";
+
+    // Construct the prompt dynamically
+    const prompt = `
+Convert the following sentence into a two-word financial description.
+
+Examples:
+paid for groceries -> Groceries Payment
+paid the rent -> Rent Expense
+got rent income -> Rent Income
+
+Sentence: ${text}
+
+Return exactly two words.
+`;
+
+    // Call Gemini API
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log("Full API response:", data);
+
+    // Extract the two-word result safely
+    let result = "Unknown ";
+    if (data.candidates && data.candidates[0].content) {
+      const content = data.candidates[0].content;
+
+      if (content.parts && content.parts[0] && content.parts[0].text) {
+        const textResult = content.parts[0].text.trim();
+        if (textResult.split(/\s+/).length === 2) result = textResult;
+      } else if (content.text) {
+        const textResult = content.text.trim();
+        if (textResult.split(/\s+/).length === 2) result = textResult;
+      }
+    }
+
+    // Return proper JSON
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: result }),
+    };
+  } catch (error) {
+    console.error("Error calling Gemini API:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
+};
+</script>
